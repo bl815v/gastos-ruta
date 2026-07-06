@@ -1,4 +1,4 @@
-const CACHE_NAME = "gastos-ruta-v1.0";
+const CACHE_NAME = "gastos-ruta-v1.1";
 
 const FILES_TO_CACHE = [
 	"./",
@@ -11,6 +11,15 @@ const FILES_TO_CACHE = [
 	"./css/responsive.css",
 
 	"./js/app.js",
+	"./js/calculations.js",	
+	"./js/config.js",
+	"./js/categories.js",
+	"./js/storage.js",
+	"./js/spreadsheet.js",
+	"./js/modal.js",
+	"./js/events.js",
+	"./js/summary.js",
+	"./js/utils.js",	
 
 	"./favicon.ico",
 
