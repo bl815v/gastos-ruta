@@ -1,0 +1,95 @@
+.tabla-gastos {
+	width: max(100%, 720px);
+	border-collapse: collapse;
+	table-layout: fixed;
+	background: #ffffff;
+}
+
+.tabla-gastos th,
+.tabla-gastos td {
+	border: 1px solid #d4dbd6;
+	min-width: 130px;
+	height: 34px;
+	background: #ffffff;
+	padding: 0;
+}
+
+.encabezado-categoria,
+.encabezado-agregar {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+}
+
+.boton-encabezado {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	padding: 6px 8px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: #ffffff;
+	text-align: center;
+}
+
+.boton-encabezado:hover {
+	filter: brightness(1.08);
+}
+
+.texto-encabezado {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 6px;
+}
+
+.boton-agregar-categoria {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	background: #dceee2;
+	color: #2f5d46;
+	font-size: 1.35rem;
+	font-weight: 700;
+	cursor: pointer;
+	line-height: 1;
+	transition: background-color 120ms ease;
+}
+
+.boton-agregar-categoria:hover {
+	background: #cfe6d7;
+}
+
+.celda-valor {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	outline: none;
+	padding: 0 8px;
+	text-align: right;
+	font-size: 0.9rem;
+	color: #24332a;
+	background: transparent;
+}
+
+.tabla-gastos tbody tr:hover td {
+	background: #f8fbf8;
+}
+
+.celda-valor:focus {
+	background: #edf6f0;
+	box-shadow: inset 0 0 0 1px #7ea88f;
+}
+
+.sin-categorias {
+	margin: 0;
+	color: #5a6480;
+	text-align: center;
+	padding: 36px 14px;
+}

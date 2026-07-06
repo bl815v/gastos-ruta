@@ -1,0 +1,25 @@
+@media (max-width: 640px) {
+	.tabla-gastos th,
+	.tabla-gastos td {
+		min-width: 112px;
+	}
+
+	.celda-valor {
+		font-size: 0.86rem;
+	}
+
+	.acciones-modal {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

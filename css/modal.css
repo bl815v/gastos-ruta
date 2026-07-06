@@ -1,0 +1,153 @@
+.capa-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 40;
+	background: rgba(27, 40, 33, 0.45);
+	display: grid;
+	place-items: center;
+	padding: 16px;
+	animation: aparecer-fondo 180ms ease-out;
+}
+
+.panel-modal {
+	width: min(100%, 430px);
+	background: #ffffff;
+	border-radius: 8px;
+	border: 1px solid #cfd9d2;
+	box-shadow: 0 10px 28px rgba(29, 41, 35, 0.22);
+	overflow: hidden;
+	animation: aparecer-panel 220ms ease-out;
+}
+
+.encabezado-modal {
+	padding: 12px 14px;
+	border-bottom: 1px solid #d8e0db;
+	background: #f3f7f4;
+}
+
+.encabezado-modal h2 {
+	margin: 0;
+	font-size: 1rem;
+	color: #2e4137;
+}
+
+.cuerpo-modal {
+	padding: 16px;
+	display: grid;
+	gap: 12px;
+}
+
+.grupo-campo {
+	display: grid;
+	gap: 6px;
+}
+
+.grupo-campo label {
+	font-size: 0.88rem;
+	color: #405247;
+	font-weight: 700;
+}
+
+.grupo-campo input[type="text"],
+.grupo-campo input[type="color"] {
+	width: 100%;
+	min-height: 42px;
+	border: 1px solid #c8d4cc;
+	border-radius: 6px;
+	padding: 9px 10px;
+	font-size: 0.95rem;
+}
+
+.grupo-campo input[type="color"] {
+	padding: 2px;
+}
+
+.acciones-modal {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	padding: 0 16px 16px;
+}
+
+.boton-secundario,
+.boton-primario,
+.boton-peligro {
+	width: 100%;
+	border: 0;
+	border-radius: 6px;
+	min-height: 42px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.boton-primario {
+	background: #2f5d46;
+	color: #ffffff;
+}
+
+.boton-secundario {
+	background: #e7efe9;
+	color: #2f4b3d;
+}
+
+.boton-peligro {
+	background: #f2e5e5;
+	color: #7e3030;
+}
+
+.boton-primario:hover {
+	background: #274d3a;
+}
+
+.boton-secundario:hover {
+	background: #dbe8df;
+}
+
+.boton-peligro:hover {
+	background: #ead8d8;
+}
+
+.fila-resumen {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 0;
+	border-bottom: 1px dashed #d4ddd7;
+}
+
+.fila-resumen:last-child {
+	border-bottom: 0;
+}
+
+.etiqueta-total {
+	color: #45584d;
+	font-weight: 700;
+}
+
+.valor-total {
+	font-weight: 800;
+	color: #2d4036;
+}
+
+.total-general {
+	border-top: 1px solid #d4ddd7;
+	margin-top: 6px;
+	padding-top: 12px;
+}
+
+@keyframes aparecer-fondo {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes aparecer-panel {
+	from {
+		opacity: 0;
+		transform: translateY(10px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}

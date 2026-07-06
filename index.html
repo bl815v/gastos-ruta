@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Gastos de Ruta</title>
+	<meta name="description" content="Aplicacion para registrar gastos de ruta en formato de hoja de calculo.">
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/spreadsheet.css">
+	<link rel="stylesheet" href="css/modal.css">
+	<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+	<main class="aplicacion" aria-label="Aplicacion de gastos de ruta">
+		<header class="encabezado-principal">
+			<h1>Gastos de Ruta</h1>
+		</header>
+
+		<section class="panel-hoja" aria-label="Hoja de gastos">
+			<div id="contenedor-hoja" class="contenedor-hoja"></div>
+		</section>
+
+		<footer class="pie-principal">
+			<button id="boton-resumen" class="boton-resumen" type="button">Resumen</button>
+		</footer>
+	</main>
+
+	<div id="capa-modal" class="capa-modal oculta" aria-hidden="true"></div>
+
+	<script type="module" src="js/app.js"></script>
+</body>
+</html>
