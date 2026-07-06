@@ -254,3 +254,13 @@ function iniciarAplicacion() {
 }
 
 document.addEventListener("DOMContentLoaded", iniciarAplicacion);
+
+if ("serviceWorker" in navigator) {
+	window.addEventListener("load", async () => {
+		try {
+			await navigator.serviceWorker.register("./sw.js");
+		} catch (error) {
+			console.error("Failed to register Service Worker:", error);
+		}
+	});
+}
