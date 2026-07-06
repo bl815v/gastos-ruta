@@ -19,7 +19,7 @@ export function crearMarcadoResumen(categorias) {
 		.map((item) => {
 			return `
 				<div class="fila-resumen">
-					<span class="etiqueta-total">${escaparHtml(item.nombre)}</span>
+					<span class="etiqueta-total">Total ${escaparHtml(item.nombre)}</span>
 					<strong class="valor-total">${formatearMoneda(item.total)}</strong>
 				</div>
 			`;
@@ -29,7 +29,7 @@ export function crearMarcadoResumen(categorias) {
 	return `
 		${filas}
 		<div class="fila-resumen total-general">
-			<span class="etiqueta-total">Total general</span>
+			<span class="etiqueta-total">Total</span>
 			<strong class="valor-total">${formatearMoneda(totalGeneral)}</strong>
 		</div>
 	`;
