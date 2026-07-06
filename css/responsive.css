@@ -1,9 +1,4 @@
 @media (max-width: 640px) {
-	.tabla-gastos th,
-	.tabla-gastos td {
-		min-width: 112px;
-	}
-
 	.celda-valor {
 		font-size: 0.86rem;
 	}

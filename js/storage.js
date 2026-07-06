@@ -12,10 +12,11 @@ function esVigente(ultimaModificacion) {
 	return diferencia <= HORAS_VIGENCIA * MILISEGUNDOS_POR_HORA;
 }
 
-export function guardarDatos(categorias, anchosColumnas = {}) {
+export function guardarDatos(categorias, anchosColumnas = {}, zoom = 100) {
 	const paquete = {
 		categorias,
 		anchosColumnas,
+		zoom,
 		ultimaModificacion: Date.now()
 	};
 
@@ -41,6 +42,10 @@ export function cargarDatos() {
 
 		if (datos.anchosColumnas && typeof datos.anchosColumnas !== "object") {
 			datos.anchosColumnas = {};
+		}
+
+		if (!Number.isFinite(Number(datos.zoom))) {
+			datos.zoom = 100;
 		}
 
 		if (!esVigente(datos.ultimaModificacion)) {

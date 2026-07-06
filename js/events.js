@@ -1,6 +1,22 @@
 import { ANCHO_COLUMNA_MINIMO } from "./config.js";
 import { formatearNumeroEditable, normalizarEntradaMonetaria } from "./utils.js";
 
+function obtenerPosicionX(evento) {
+	if (typeof evento.clientX === "number") {
+		return evento.clientX;
+	}
+
+	if (evento.touches?.length) {
+		return evento.touches[0].clientX;
+	}
+
+	if (evento.changedTouches?.length) {
+		return evento.changedTouches[0].clientX;
+	}
+
+	return 0;
+}
+
 function manejarClickEnHoja(evento, acciones) {
 	const botonAgregar = evento.target.closest('[data-accion="agregar-categoria"]');
 	if (botonAgregar) {
@@ -40,6 +56,11 @@ function manejarSalidaDeCelda(evento, acciones) {
 		return;
 	}
 
+	if (campo.dataset.omitirBlur === "1") {
+		delete campo.dataset.omitirBlur;
+		return;
+	}
+
 	const { numero } = normalizarEntradaMonetaria(campo.value);
 	const categoriaId = campo.dataset.categoriaId;
 	const fila = Number(campo.dataset.fila);
@@ -64,13 +85,13 @@ function manejarFocoCelda(evento) {
 	}
 }
 
-function iniciarRedimension(evento, contenedorHoja, acciones) {
+function iniciarRedimension(evento, contenedorHoja, acciones, estadoRedimension) {
 	const control = evento.target.closest('[data-accion="iniciar-redimension"]');
 	if (!control) {
 		return false;
 	}
 
-	if (evento.button !== 0) {
+	if (typeof evento.button === "number" && evento.button !== 0) {
 		return true;
 	}
 
@@ -87,32 +108,87 @@ function iniciarRedimension(evento, contenedorHoja, acciones) {
 		return true;
 	}
 
-	const anchoInicial = Math.max(ANCHO_COLUMNA_MINIMO, Math.round(columna.getBoundingClientRect().width));
-	const posicionInicialX = evento.clientX;
+	const anchoBase = Number(columna.dataset.anchoBase || 0);
+	const anchoInicialBase = Math.max(ANCHO_COLUMNA_MINIMO, Math.round(Number.isFinite(anchoBase) ? anchoBase : columna.getBoundingClientRect().width));
+	const posicionInicialX = obtenerPosicionX(evento);
+	const escalaActual = acciones.alObtenerEscalaZoom();
 
-	const alMover = (eventoMover) => {
-		const delta = eventoMover.clientX - posicionInicialX;
-		const nuevoAncho = Math.max(ANCHO_COLUMNA_MINIMO, Math.round(anchoInicial + delta));
-		columna.style.width = `${nuevoAncho}px`;
-		acciones.alCambiarAnchoColumnaEnVivo(idCategoria, nuevoAncho);
-	};
+	estadoRedimension.activo = true;
+	estadoRedimension.idCategoria = idCategoria;
+	estadoRedimension.columna = columna;
+	estadoRedimension.posicionInicialX = posicionInicialX;
+	estadoRedimension.anchoInicialBase = anchoInicialBase;
+	estadoRedimension.escala = escalaActual;
+	estadoRedimension.pointerId = typeof evento.pointerId === "number" ? evento.pointerId : null;
 
-	const alSoltar = (eventoSoltar) => {
-		const delta = eventoSoltar.clientX - posicionInicialX;
-		const nuevoAncho = Math.max(ANCHO_COLUMNA_MINIMO, Math.round(anchoInicial + delta));
-		acciones.alConfirmarAnchoColumna(idCategoria, nuevoAncho);
-		document.removeEventListener("mousemove", alMover);
-		document.removeEventListener("mouseup", alSoltar);
-		document.body.classList.remove("redimensionando");
-	};
+	if (control.setPointerCapture && typeof evento.pointerId === "number") {
+		try {
+			control.setPointerCapture(evento.pointerId);
+		} catch {
+			// Algunos navegadores o simulaciones tactiles no exponen puntero activo capturable.
+		}
+	}
 
-	document.addEventListener("mousemove", alMover);
-	document.addEventListener("mouseup", alSoltar);
 	document.body.classList.add("redimensionando");
 	return true;
 }
 
-function manejarTeclaCelda(evento) {
+function moverRedimension(evento, acciones, estadoRedimension) {
+	if (!estadoRedimension.activo) {
+		return;
+	}
+
+	if (
+		typeof estadoRedimension.pointerId === "number" &&
+		typeof evento.pointerId === "number" &&
+		evento.pointerId !== estadoRedimension.pointerId
+	) {
+		return;
+	}
+
+	if (evento.cancelable) {
+		evento.preventDefault();
+	}
+
+	const delta = obtenerPosicionX(evento) - estadoRedimension.posicionInicialX;
+	const nuevoAnchoBase = Math.max(
+		ANCHO_COLUMNA_MINIMO,
+		Math.round(estadoRedimension.anchoInicialBase + delta / estadoRedimension.escala)
+	);
+	const nuevoAnchoVisual = Math.round(nuevoAnchoBase * estadoRedimension.escala);
+
+	estadoRedimension.columna.style.width = `${nuevoAnchoVisual}px`;
+	estadoRedimension.columna.dataset.anchoBase = String(nuevoAnchoBase);
+	acciones.alCambiarAnchoColumnaEnVivo(estadoRedimension.idCategoria, nuevoAnchoBase);
+}
+
+function finalizarRedimension(evento, acciones, estadoRedimension) {
+	if (!estadoRedimension.activo) {
+		return;
+	}
+
+	if (
+		typeof estadoRedimension.pointerId === "number" &&
+		typeof evento.pointerId === "number" &&
+		evento.pointerId !== estadoRedimension.pointerId
+	) {
+		return;
+	}
+
+	const delta = obtenerPosicionX(evento) - estadoRedimension.posicionInicialX;
+	const nuevoAnchoBase = Math.max(
+		ANCHO_COLUMNA_MINIMO,
+		Math.round(estadoRedimension.anchoInicialBase + delta / estadoRedimension.escala)
+	);
+	acciones.alConfirmarAnchoColumna(estadoRedimension.idCategoria, nuevoAnchoBase);
+
+	estadoRedimension.activo = false;
+	estadoRedimension.idCategoria = null;
+	estadoRedimension.columna = null;
+	document.body.classList.remove("redimensionando");
+}
+
+function manejarTeclaCelda(evento, acciones) {
 	const campo = evento.target.closest('[data-accion="editar-celda"]');
 	if (!campo) {
 		return;
@@ -120,7 +196,13 @@ function manejarTeclaCelda(evento) {
 
 	if (evento.key === "Enter") {
 		evento.preventDefault();
-		campo.blur();
+		const { numero } = normalizarEntradaMonetaria(campo.value);
+		campo.dataset.omitirBlur = "1";
+		acciones.alConfirmarCeldaYAvanzar(
+			campo.dataset.categoriaId,
+			Number(campo.dataset.fila),
+			numero
+		);
 	}
 }
 
@@ -133,18 +215,48 @@ export function registrarEventosInterfaz({
 	alEditarCeldaEnVivo,
 	alCambiarAnchoColumnaEnVivo,
 	alConfirmarAnchoColumna,
+	alConfirmarCeldaYAvanzar,
+	alObtenerEscalaZoom,
 	alAbrirResumen
 }) {
+	const estadoRedimension = {
+		activo: false,
+		idCategoria: null,
+		columna: null,
+		posicionInicialX: 0,
+		anchoInicialBase: 0,
+		escala: 1,
+		pointerId: null
+	};
+
 	const acciones = {
 		alAgregarCategoria,
 		alAbrirCategoria,
 		alEditarCelda,
 		alCambiarAnchoColumnaEnVivo,
-		alConfirmarAnchoColumna
+		alConfirmarAnchoColumna,
+		alConfirmarCeldaYAvanzar,
+		alObtenerEscalaZoom
 	};
 
-	contenedorHoja.addEventListener("mousedown", (evento) => {
-		iniciarRedimension(evento, contenedorHoja, acciones);
+	contenedorHoja.addEventListener("pointerdown", (evento) => {
+		iniciarRedimension(evento, contenedorHoja, acciones, estadoRedimension);
+	});
+
+	window.addEventListener(
+		"pointermove",
+		(evento) => {
+			moverRedimension(evento, acciones, estadoRedimension);
+		},
+		{ passive: false }
+	);
+
+	window.addEventListener("pointerup", (evento) => {
+		finalizarRedimension(evento, acciones, estadoRedimension);
+	});
+
+	window.addEventListener("pointercancel", (evento) => {
+		finalizarRedimension(evento, acciones, estadoRedimension);
 	});
 
 	contenedorHoja.addEventListener("click", (evento) => {
@@ -170,7 +282,9 @@ export function registrarEventosInterfaz({
 		true
 	);
 
-	contenedorHoja.addEventListener("keydown", manejarTeclaCelda);
+	contenedorHoja.addEventListener("keydown", (evento) => {
+		manejarTeclaCelda(evento, acciones);
+	});
 
 	botonResumen.addEventListener("click", () => {
 		alAbrirResumen();

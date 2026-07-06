@@ -41,14 +41,14 @@ function crearColGroup(categorias, anchosColumnas) {
 	const columnasCategorias = categorias
 		.map((categoria) => {
 			const ancho = obtenerAnchoColumna(anchosColumnas, categoria.id);
-			return `<col data-columna-id="${categoria.id}" style="width:${ancho}px">`;
+			return `<col data-columna-id="${categoria.id}" data-ancho-base="${ancho}" style="width:${ancho}px">`;
 		})
 		.join("");
 
 	return `
 		<colgroup>
 			${columnasCategorias}
-			<col style="width:${ANCHO_COLUMNA_AGREGAR}px">
+			<col data-columna-agregar="1" data-ancho-base="${ANCHO_COLUMNA_AGREGAR}" style="width:${ANCHO_COLUMNA_AGREGAR}px">
 		</colgroup>
 	`;
 }
@@ -61,7 +61,7 @@ function crearEncabezados(categorias, anchosColumnas) {
 			const ancho = obtenerAnchoColumna(anchosColumnas, categoria.id);
 
 			return `
-				<th class="encabezado-categoria" scope="col" style="background:${colorSeguro};width:${ancho}px;min-width:${ANCHO_COLUMNA_MINIMO}px">
+				<th class="encabezado-categoria" scope="col" style="background:${colorSeguro};width:${ancho}px;min-width:${ANCHO_COLUMNA_MINIMO}px" data-ancho-base="${ancho}">
 					<button
 						class="boton-encabezado"
 						type="button"
@@ -84,7 +84,7 @@ function crearEncabezados(categorias, anchosColumnas) {
 		.join("");
 
 	const encabezadoAgregar = `
-		<th class="encabezado-agregar" scope="col" aria-label="Agregar categoria" style="background:#dceee2;width:${ANCHO_COLUMNA_AGREGAR}px">
+		<th class="encabezado-agregar" scope="col" aria-label="Agregar categoria" style="background:#dceee2;width:${ANCHO_COLUMNA_AGREGAR}px" data-ancho-base="${ANCHO_COLUMNA_AGREGAR}">
 			<button
 				class="boton-agregar-categoria"
 				type="button"
@@ -112,6 +112,7 @@ function crearCeldasFila(categorias, fila) {
 						class="celda-valor"
 						type="text"
 						inputmode="decimal"
+						enterkeyhint="next"
 						autocomplete="off"
 						data-accion="editar-celda"
 						data-categoria-id="${categoria.id}"
