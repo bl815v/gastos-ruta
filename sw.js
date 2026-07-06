@@ -1,4 +1,4 @@
-const CACHE_NAME = "gastos-ruta-v1.1";
+const CACHE_NAME = "gastos-ruta-v1.2";
 
 const FILES_TO_CACHE = [
 	"./",

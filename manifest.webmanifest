@@ -1,6 +1,6 @@
 {
 	"name": "Gastos de Ruta",
-	"short_name": "Gastos",
+	"short_name": "GastosRuta",
 	"description": "Aplicación para registrar gastos de ruta.",
 	"start_url": "./",
 	"scope": "./",
