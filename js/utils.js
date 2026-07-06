@@ -1,4 +1,8 @@
-const REGEX_SOLO_NUMEROS = /^\d*(\.\d*)?$/;
+const REGEX_MONEDA_EDITABLE = /^-?\d*(,\d*)?$/;
+const FORMATEADOR_MONEDA = new Intl.NumberFormat("es-CO", {
+	minimumFractionDigits: 0,
+	maximumFractionDigits: 2
+});
 
 export function crearIdUnico(prefijo = "id") {
 	const aleatorio = Math.random().toString(36).slice(2, 9);
@@ -19,34 +23,50 @@ export function limpiarNombreCategoria(nombre, valorDefecto = "Categoria") {
 	return limpio || valorDefecto;
 }
 
-export function normalizarEntradaNumerica(textoOriginal) {
-	const textoBase = String(textoOriginal ?? "").replace(/,/g, ".");
+export function normalizarEntradaMonetaria(textoOriginal) {
+	const textoBase = String(textoOriginal ?? "").replace(/\s+/g, "").replace(/\$/g, "");
 
 	let textoFiltrado = "";
-	let yaTienePunto = false;
+	let tieneComa = false;
+	let tieneSigno = false;
 
-	for (const caracter of textoBase) {
+	for (let indice = 0; indice < textoBase.length; indice += 1) {
+		const caracter = textoBase[indice];
+
 		if (caracter >= "0" && caracter <= "9") {
 			textoFiltrado += caracter;
 			continue;
 		}
 
-		if (caracter === "." && !yaTienePunto) {
-			textoFiltrado += caracter;
-			yaTienePunto = true;
+		if (caracter === "-" && !tieneSigno && textoFiltrado.length === 0) {
+			textoFiltrado += "-";
+			tieneSigno = true;
+			continue;
+		}
+
+		if ((caracter === "," || caracter === ".") && !tieneComa) {
+			textoFiltrado += ",";
+			tieneComa = true;
 		}
 	}
 
-	const esValido = REGEX_SOLO_NUMEROS.test(textoFiltrado);
+	if (!REGEX_MONEDA_EDITABLE.test(textoFiltrado)) {
+		return {
+			texto: "",
+			numero: null
+		};
+	}
 
-	if (!esValido || textoFiltrado === "" || textoFiltrado === ".") {
+	if (textoFiltrado === "" || textoFiltrado === "-" || textoFiltrado === "," || textoFiltrado === "-,") {
 		return {
 			texto: textoFiltrado,
 			numero: null
 		};
 	}
 
-	const numero = Number(textoFiltrado);
+	const textoParaNumero = textoFiltrado.replace(",", ".");
+	const numero = Number(textoParaNumero);
+
 	return {
 		texto: textoFiltrado,
 		numero: Number.isFinite(numero) ? numero : null
@@ -69,10 +89,31 @@ export function limpiarFinalVacio(arreglo) {
 }
 
 export function formatearMoneda(valor) {
-	return Number(valor || 0).toLocaleString("es-CO", {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2
-	});
+	const numero = Number(valor || 0);
+	const normalizado = Number.isFinite(numero) ? numero : 0;
+	return `$ ${FORMATEADOR_MONEDA.format(normalizado)}`;
+}
+
+export function formatearNumeroEditable(valor) {
+	if (valor === null || valor === undefined || Number.isNaN(Number(valor))) {
+		return "";
+	}
+
+	const numero = Number(valor);
+	if (!Number.isFinite(numero)) {
+		return "";
+	}
+
+	let texto = String(numero);
+	if (texto.includes("e") || texto.includes("E")) {
+		texto = numero.toFixed(2);
+	}
+
+	if (texto.includes(".")) {
+		texto = texto.replace(/0+$/, "").replace(/\.$/, "");
+	}
+
+	return texto.replace(".", ",");
 }
 
 export function formatearValorCelda(valor) {
@@ -80,10 +121,5 @@ export function formatearValorCelda(valor) {
 		return "";
 	}
 
-	const numero = Number(valor);
-	if (Number.isInteger(numero)) {
-		return String(numero);
-	}
-
-	return String(numero);
+	return formatearMoneda(valor);
 }

@@ -1,4 +1,9 @@
-import { escaparHtml, formatearValorCelda } from "./utils.js";
+import {
+	ANCHO_COLUMNA_AGREGAR,
+	ANCHO_COLUMNA_DEFECTO,
+	ANCHO_COLUMNA_MINIMO
+} from "./config.js";
+import { escaparHtml, formatearNumeroEditable, formatearValorCelda } from "./utils.js";
 
 function obtenerUltimaFilaUtilizada(categorias) {
 	let ultimaFila = -1;
@@ -23,14 +28,40 @@ export function obtenerCantidadFilas(categorias, filasMinimas) {
 	return Math.max(filasMinimas, filasNecesarias);
 }
 
-function crearEncabezados(categorias) {
+function obtenerAnchoColumna(anchosColumnas, idCategoria) {
+	const ancho = Number(anchosColumnas?.[idCategoria]);
+	if (!Number.isFinite(ancho)) {
+		return ANCHO_COLUMNA_DEFECTO;
+	}
+
+	return Math.max(ANCHO_COLUMNA_MINIMO, Math.round(ancho));
+}
+
+function crearColGroup(categorias, anchosColumnas) {
+	const columnasCategorias = categorias
+		.map((categoria) => {
+			const ancho = obtenerAnchoColumna(anchosColumnas, categoria.id);
+			return `<col data-columna-id="${categoria.id}" style="width:${ancho}px">`;
+		})
+		.join("");
+
+	return `
+		<colgroup>
+			${columnasCategorias}
+			<col style="width:${ANCHO_COLUMNA_AGREGAR}px">
+		</colgroup>
+	`;
+}
+
+function crearEncabezados(categorias, anchosColumnas) {
 	const encabezadosCategorias = categorias
 		.map((categoria) => {
 			const nombreSeguro = escaparHtml(categoria.nombre);
 			const colorSeguro = escaparHtml(categoria.color);
+			const ancho = obtenerAnchoColumna(anchosColumnas, categoria.id);
 
 			return `
-				<th class="encabezado-categoria" scope="col" style="background:${colorSeguro}">
+				<th class="encabezado-categoria" scope="col" style="background:${colorSeguro};width:${ancho}px;min-width:${ANCHO_COLUMNA_MINIMO}px">
 					<button
 						class="boton-encabezado"
 						type="button"
@@ -41,13 +72,19 @@ function crearEncabezados(categorias) {
 					>
 						<span class="texto-encabezado">${nombreSeguro}</span>
 					</button>
+					<div
+						class="control-redimension"
+						data-accion="iniciar-redimension"
+						data-categoria-id="${categoria.id}"
+						role="presentation"
+					></div>
 				</th>
 			`;
 		})
 		.join("");
 
 	const encabezadoAgregar = `
-		<th class="encabezado-agregar" scope="col" aria-label="Agregar categoria" style="background:#dceee2">
+		<th class="encabezado-agregar" scope="col" aria-label="Agregar categoria" style="background:#dceee2;width:${ANCHO_COLUMNA_AGREGAR}px">
 			<button
 				class="boton-agregar-categoria"
 				type="button"
@@ -64,8 +101,10 @@ function crearEncabezados(categorias) {
 function crearCeldasFila(categorias, fila) {
 	const celdasCategorias = categorias
 		.map((categoria) => {
+			const valorReal = categoria.gastos?.[fila];
 			const valor = formatearValorCelda(categoria.gastos?.[fila]);
 			const valorSeguro = escaparHtml(valor);
+			const valorRealEditable = escaparHtml(formatearNumeroEditable(valorReal));
 
 			return `
 				<td>
@@ -77,6 +116,7 @@ function crearCeldasFila(categorias, fila) {
 						data-accion="editar-celda"
 						data-categoria-id="${categoria.id}"
 						data-fila="${fila}"
+						data-valor-real="${valorRealEditable}"
 						value="${valorSeguro}"
 						aria-label="Valor fila ${fila + 1} categoria ${escaparHtml(categoria.nombre)}"
 					>
@@ -89,16 +129,17 @@ function crearCeldasFila(categorias, fila) {
 	return `${celdasCategorias}${celdaVaciaFinal}`;
 }
 
-export function crearMarcadoHoja(categorias, cantidadFilas) {
+export function crearMarcadoHoja(categorias, cantidadFilas, anchosColumnas) {
 	const filasMarcado = Array.from({ length: cantidadFilas }, (_, fila) => {
 		return `<tr>${crearCeldasFila(categorias, fila)}</tr>`;
 	}).join("");
 
 	return `
 		<table class="tabla-gastos" aria-label="Tabla de gastos por categoria">
+			${crearColGroup(categorias, anchosColumnas)}
 			<thead>
 				<tr>
-					${crearEncabezados(categorias)}
+					${crearEncabezados(categorias, anchosColumnas)}
 				</tr>
 			</thead>
 			<tbody>

@@ -110,13 +110,24 @@ export function abrirModalCategoria({ categoria, onGuardar, onEliminar }) {
 	campoNombre.focus();
 }
 
-export function abrirModalResumen(categorias) {
+export function abrirModalResumen(categorias, onBorrarTodo) {
 	if (!capaModal) {
 		return;
 	}
 
 	const panel = crearEstructuraPanel("Resumen", crearMarcadoResumen(categorias));
 	const acciones = panel.querySelector(".acciones-modal");
+
+	agregarBoton(acciones, "boton-peligro", "Borrar todo", () => {
+		const confirmar = window.confirm("Se eliminaran todos los datos y se restauraran las categorias por defecto. Deseas continuar?");
+		if (!confirmar) {
+			return;
+		}
+
+		onBorrarTodo?.();
+		cerrarModal();
+	});
+
 	agregarBoton(acciones, "boton-primario", "Cerrar", () => {
 		cerrarModal();
 	});

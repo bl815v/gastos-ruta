@@ -10,7 +10,7 @@ export function crearMarcadoResumen(categorias) {
 			<p>No hay categorias registradas.</p>
 			<div class="fila-resumen total-general">
 				<span class="etiqueta-total">Total general</span>
-				<strong class="valor-total">0.00</strong>
+				<strong class="valor-total">${formatearMoneda(0)}</strong>
 			</div>
 		`;
 	}

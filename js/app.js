@@ -8,13 +8,14 @@ import {
 	eliminarCategoria,
 	normalizarCategorias
 } from "./categories.js";
-import { cargarDatos, guardarDatos } from "./storage.js";
+import { cargarDatos, guardarDatos, limpiarDatos } from "./storage.js";
 import { crearMarcadoHoja, obtenerCantidadFilas } from "./spreadsheet.js";
 import { abrirModalCategoria, abrirModalResumen, inicializarModal } from "./modal.js";
 import { registrarEventosInterfaz } from "./events.js";
 
 const estado = {
-	categorias: []
+	categorias: [],
+	anchosColumnas: {}
 };
 
 const elementos = {
@@ -24,7 +25,7 @@ const elementos = {
 };
 
 function persistirEstado() {
-	guardarDatos(estado.categorias);
+	guardarDatos(estado.categorias, estado.anchosColumnas);
 }
 
 function actualizarCeldaSinRedibujar(idCategoria, fila, numero) {
@@ -38,7 +39,7 @@ function renderizarHoja() {
 	}
 
 	const filas = obtenerCantidadFilas(estado.categorias, FILAS_MINIMAS);
-	elementos.contenedorHoja.innerHTML = crearMarcadoHoja(estado.categorias, filas);
+	elementos.contenedorHoja.innerHTML = crearMarcadoHoja(estado.categorias, filas, estado.anchosColumnas);
 }
 
 function aplicarCambio(mutacion) {
@@ -63,9 +64,18 @@ function abrirEdicionCategoria(idCategoria) {
 		onEliminar: () => {
 			aplicarCambio(() => {
 				eliminarCategoria(estado.categorias, idCategoria);
+				delete estado.anchosColumnas[idCategoria];
 			});
 		}
 	});
+}
+
+function reiniciarAplicacion() {
+	limpiarDatos();
+	estado.categorias = crearCategoriasIniciales();
+	estado.anchosColumnas = {};
+	persistirEstado();
+	renderizarHoja();
 }
 
 function inicializarEstado() {
@@ -78,6 +88,7 @@ function inicializarEstado() {
 	}
 
 	estado.categorias = normalizarCategorias(datosGuardados.categorias);
+	estado.anchosColumnas = { ...(datosGuardados.anchosColumnas || {}) };
 
 	if (estado.categorias.length === 0) {
 		estado.categorias = crearCategoriasIniciales();
@@ -123,8 +134,17 @@ function conectarEventos() {
 				renderizarHoja();
 			}
 		},
+		alCambiarAnchoColumnaEnVivo: (idCategoria, ancho) => {
+			estado.anchosColumnas[idCategoria] = ancho;
+		},
+		alConfirmarAnchoColumna: (idCategoria, ancho) => {
+			estado.anchosColumnas[idCategoria] = ancho;
+			persistirEstado();
+		},
 		alAbrirResumen: () => {
-			abrirModalResumen(estado.categorias);
+			abrirModalResumen(estado.categorias, () => {
+				reiniciarAplicacion();
+			});
 		}
 	});
 }

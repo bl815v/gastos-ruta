@@ -1,5 +1,5 @@
 .tabla-gastos {
-	width: max(100%, 720px);
+	width: max-content;
 	border-collapse: collapse;
 	table-layout: fixed;
 	background: #ffffff;
@@ -8,7 +8,7 @@
 .tabla-gastos th,
 .tabla-gastos td {
 	border: 1px solid #d4dbd6;
-	min-width: 130px;
+	min-width: 80px;
 	height: 34px;
 	background: #ffffff;
 	padding: 0;
@@ -19,6 +19,10 @@
 	position: sticky;
 	top: 0;
 	z-index: 3;
+}
+
+.encabezado-categoria {
+	z-index: 4;
 }
 
 .boton-encabezado {
@@ -38,6 +42,10 @@
 	text-align: center;
 }
 
+.encabezado-categoria .boton-encabezado {
+	padding-right: 10px;
+}
+
 .boton-encabezado:hover {
 	filter: brightness(1.08);
 }
@@ -47,6 +55,21 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	padding: 0 6px;
+}
+
+.control-redimension {
+	position: absolute;
+	right: -4px;
+	top: 0;
+	width: 8px;
+	height: 100%;
+	cursor: col-resize;
+	z-index: 8;
+	background: transparent;
+}
+
+.control-redimension:hover {
+	background: rgba(255, 255, 255, 0.32);
 }
 
 .boton-agregar-categoria {
@@ -76,6 +99,11 @@
 	font-size: 0.9rem;
 	color: #24332a;
 	background: transparent;
+}
+
+body.redimensionando {
+	cursor: col-resize;
+	user-select: none;
 }
 
 .tabla-gastos tbody tr:hover td {
